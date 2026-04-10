@@ -454,6 +454,31 @@ def update_grade(student_id, subject):
 
     return render_template("update_grade.html", student_id=student_id, subject=subject, current_mark=current_mark)
 
+@app.route("/search", methods=["GET", "POST"])
+def search_student():
+    load_students()
+    load_grades()
+
+    results = []
+
+    if request.method == "POST":
+        search_name = request.form.get("search_name").strip().lower()
+
+        for student_id in students:
+            name = students[student_id]
+
+            # Partial match so you don't need to type the full name
+            if search_name in name.lower():
+                average = calculate_average(student_id)
+
+                results.append({
+                    "student_id": student_id,
+                    "name": name,
+                    "average": average if average != -1 else None
+                })
+
+    return render_template("search.html", results=results)
+
 if __name__ == "__main__":
     load_students()
     load_grades()
