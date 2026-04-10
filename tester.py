@@ -309,6 +309,34 @@ def add_student():
 
     return render_template("add_student.html")
 
+@app.route("/delete-student/<student_id>", methods=["GET", "POST"])
+def delete_student(student_id):
+    load_students()
+    load_grades()
+
+    if student_id not in students:
+        return redirect(url_for("view_students"))
+
+    if request.method == "POST":
+        name = students[student_id]
+        del students[student_id]
+
+        # Remove all grades belonging to this student
+        i = 0
+        while i < len(grades):
+            if grades[i]["student_id"] == student_id:
+                grades.pop(i)
+            else:
+                i = i + 1
+
+        save_students()
+        save_grades()
+
+        return redirect(url_for("view_students"))
+
+    name = students[student_id]
+    return render_template("delete_student.html", student_id=student_id, name=name)
+
 if __name__ == "__main__":
     load_students()
     load_grades()
