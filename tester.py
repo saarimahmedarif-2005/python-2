@@ -9,6 +9,120 @@ GRADES_FILE = "grades.csv"
 students = {}
 grades = []
 
+def fig_to_base64(fig):
+    # Converts a matplotlib figure to a base64 string so it can be displayed in HTML
+    img = io.BytesIO()
+    FigureCanvas(fig).print_png(img)
+    img.seek(0)
+    plot_url = base64.b64encode(img.getvalue()).decode()
+    plt.close(fig)
+    return plot_url
+
+
+def get_student_averages_chart():
+    if len(students) == 0:
+        return None
+
+    student_names = []
+    averages = []
+
+    for student_id in students:
+        name = students[student_id]
+        average = calculate_average(student_id)
+
+        if average != -1:
+            student_names.append(name)
+            averages.append(average)
+
+    if len(student_names) == 0:
+        return None
+
+    fig = plt.figure(figsize=(10, 5))
+    plt.bar(student_names, averages, color="skyblue")
+    plt.xlabel("Student Name")
+    plt.ylabel("Average Grade")
+    plt.title("Student Average Grades")
+    plt.ylim(0, 100)
+    plt.grid(axis="y", alpha=0.3)
+    plt.tight_layout()
+
+    return fig_to_base64(fig)
+
+
+def get_subject_averages_chart():
+    if len(grades) == 0:
+        return None
+
+    subject_totals = {}
+    subject_counts = {}
+
+    for grade_entry in grades:
+        subject = grade_entry["subject"]
+        mark = grade_entry["mark"]
+
+        if subject not in subject_totals:
+            subject_totals[subject] = 0
+            subject_counts[subject] = 0
+
+        subject_totals[subject] = subject_totals[subject] + mark
+        subject_counts[subject] = subject_counts[subject] + 1
+
+    subject_names = []
+    subject_averages = []
+
+    for subject in subject_totals:
+        average = subject_totals[subject] / subject_counts[subject]
+        subject_names.append(subject)
+        subject_averages.append(average)
+
+    if len(subject_names) == 0:
+        return None
+
+    fig = plt.figure(figsize=(10, 5))
+    plt.bar(subject_names, subject_averages, color="lightcoral")
+    plt.xlabel("Subject")
+    plt.ylabel("Average Grade")
+    plt.title("Subject Average Grades")
+    plt.ylim(0, 100)
+    plt.grid(axis="y", alpha=0.3)
+    plt.tight_layout()
+
+    return fig_to_base64(fig)
+
+
+def get_pass_fail_chart():
+    if len(students) == 0:
+        return None
+
+    passing_count = 0
+    failing_count = 0
+
+    for student_id in students:
+        average = calculate_average(student_id)
+
+        if average == -1:
+            continue
+
+        if average >= 50:
+            passing_count = passing_count + 1
+        else:
+            failing_count = failing_count + 1
+
+    total = passing_count + failing_count
+
+    if total == 0:
+        return None
+
+    labels = ["Passing (>= 50)", "Failing (< 50)"]
+    sizes = [passing_count, failing_count]
+    colors = ["lightgreen", "lightcoral"]
+
+    fig = plt.figure(figsize=(8, 6))
+    plt.pie(sizes, labels=labels, colors=colors, autopct="%1.1f%%", startangle=90)
+    plt.title("Pass vs Fail Distribution")
+    plt.tight_layout()
+
+    return fig_to_base64(fig)
 
 def load_students():
     global students
