@@ -479,6 +479,78 @@ def search_student():
 
     return render_template("search.html", results=results)
 
+@app.route("/report")
+def generate_report():
+    load_students()
+    load_grades()
+
+    if len(students) == 0:
+        return render_template("report.html", students_list=[], top_student=None, top_average=None, class_average=None, failing_students=[], student_chart=None, subject_chart=None, pass_fail_chart=None)
+
+    top_student_id = ""
+    top_average = -1
+    class_total = 0
+    class_count = 0
+    failing_students = []
+
+    for student_id in students:
+        average = calculate_average(student_id)
+
+        if average == -1:
+            continue
+
+        class_total = class_total + average
+        class_count = class_count + 1
+
+        if average > top_average:
+            top_average = average
+            top_student_id = student_id
+
+        # Students below 50 are considered failing
+        if average < 50:
+            failing_students.append(student_id)
+
+    students_list = []
+    for student_id in students:
+        name = students[student_id]
+        average = calculate_average(student_id)
+
+        students_list.append({
+            "name": name,
+            "student_id": student_id,
+            "average": average if average != -1 else None
+        })
+
+    class_average = None
+    if class_count > 0:
+        class_average = class_total / class_count
+
+    top_student_name = students[top_student_id] if top_student_id else None
+
+    failing_students_list = []
+    for student_id in failing_students:
+        failing_students_list.append({
+            "name": students[student_id],
+            "student_id": student_id,
+            "average": calculate_average(student_id)
+        })
+
+    student_chart = get_student_averages_chart()
+    subject_chart = get_subject_averages_chart()
+    pass_fail_chart = get_pass_fail_chart()
+
+    return render_template("report.html",
+        students_list=students_list,
+        top_student=top_student_name,
+        top_student_id=top_student_id,
+        top_average=round(top_average, 2) if top_average != -1 else None,
+        class_average=round(class_average, 2) if class_average else None,
+        failing_students=failing_students_list,
+        student_chart=student_chart,
+        subject_chart=subject_chart,
+        pass_fail_chart=pass_fail_chart
+    )
+
 if __name__ == "__main__":
     load_students()
     load_grades()
