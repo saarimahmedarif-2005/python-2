@@ -80,3 +80,37 @@ def save_grades():
         writer.writerow(grade_entry)
 
     file.close()
+
+def calculate_average(student_id):
+    # Returns -1 if student has no grades
+    total = 0
+    count = 0
+
+    for grade_entry in grades:
+        if grade_entry["student_id"] == student_id:
+            total = total + grade_entry["mark"]
+            count = count + 1
+
+    if count == 0:
+        return -1
+
+    average = total / count
+    return average
+
+
+def is_valid_mark(mark_input):
+    # Checks the mark is a valid whole or decimal number
+    if mark_input == "":
+        return False
+
+    dot_count = 0
+
+    for character in mark_input:
+        if character == ".":
+            dot_count = dot_count + 1
+            if dot_count > 1:
+                return False
+        elif character.isdigit() == False:
+            return False
+
+    return True    
