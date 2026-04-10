@@ -282,6 +282,33 @@ def view_students():
 
     return render_template("students.html", students=student_list)
 
+@app.route("/add-student", methods=["GET", "POST"])
+def add_student():
+    if request.method == "POST":
+        load_students()
+
+        student_id = request.form.get("student_id").strip()
+        name = request.form.get("name").strip()
+
+        error = None
+
+        if student_id == "":
+            error = "Student ID cannot be empty."
+        elif student_id in students:
+            error = "Student ID already exists."
+        elif name == "":
+            error = "Name cannot be empty."
+
+        if error:
+            return render_template("add_student.html", error=error)
+
+        students[student_id] = name
+        save_students()
+
+        return redirect(url_for("view_students"))
+
+    return render_template("add_student.html")
+
 if __name__ == "__main__":
     load_students()
     load_grades()
