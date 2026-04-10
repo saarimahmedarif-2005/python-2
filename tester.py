@@ -1,13 +1,128 @@
-print("Hello")
-print("Hi")
-
 import csv
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
+import io
+import base64
+from flask import Flask, render_template, request, redirect, url_for
+from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
+
+app = Flask(__name__)
+
+# Data structures
+students = {}
+grades = []
 
 STUDENTS_FILE = "students.csv"
 GRADES_FILE = "grades.csv"
 
-students = {}
-grades = []
+
+def load_students():
+    global students
+    students = {}
+
+    # Create the file if it doesn't exist, then read it
+    file = open(STUDENTS_FILE, "a+")
+    file.close()
+
+    file = open(STUDENTS_FILE, "r")
+    reader = csv.DictReader(file)
+
+    for row in reader:
+        if row["student_id"] and row["name"]:
+            student_id = row["student_id"].strip()
+            name = row["name"].strip()
+            students[student_id] = name
+
+    file.close()
+
+
+def load_grades():
+    global grades
+    grades = []
+
+    # Create the file if it doesn't exist, then read it
+    file = open(GRADES_FILE, "a+")
+    file.close()
+
+    file = open(GRADES_FILE, "r")
+    reader = csv.DictReader(file)
+
+    for row in reader:
+        if row["student_id"] and row["subject"] and row["mark"]:
+            grade_entry = {
+                "student_id": row["student_id"].strip(),
+                "subject": row["subject"].strip(),
+                "mark": float(row["mark"])
+            }
+            grades.append(grade_entry)
+
+    file.close()
+
+
+def save_students():
+    file = open(STUDENTS_FILE, "w", newline="")
+    fieldnames = ["student_id", "name"]
+    writer = csv.DictWriter(file, fieldnames=fieldnames)
+
+    writer.writeheader()
+
+    for student_id in students:
+        writer.writerow({
+            "student_id": student_id,
+            "name": students[student_id]
+        })
+
+    file.close()
+
+
+def save_grades():
+    file = open(GRADES_FILE, "w", newline="")
+    fieldnames = ["student_id", "subject", "mark"]
+    writer = csv.DictWriter(file, fieldnames=fieldnames)
+
+    writer.writeheader()
+
+    for grade_entry in grades:
+        writer.writerow(grade_entry)
+
+    file.close()
+
+
+def calculate_average(student_id):
+    # Returns -1 if student has no grades
+    total = 0
+    count = 0
+
+    for grade_entry in grades:
+        if grade_entry["student_id"] == student_id:
+            total = total + grade_entry["mark"]
+            count = count + 1
+
+    if count == 0:
+        return -1
+
+    average = total / count
+    return average
+
+
+def is_valid_mark(mark_input):
+    # Checks the mark is a valid whole or decimal number
+    if mark_input == "":
+        return False
+
+    dot_count = 0
+
+    for character in mark_input:
+        if character == ".":
+            dot_count = dot_count + 1
+            if dot_count > 1:
+                return False
+        elif character.isdigit() == False:
+            return False
+
+    return True
+
 
 def fig_to_base64(fig):
     # Converts a matplotlib figure to a base64 string so it can be displayed in HTML
@@ -124,107 +239,32 @@ def get_pass_fail_chart():
 
     return fig_to_base64(fig)
 
-def load_students():
-    global students
-    students = {}
 
-    # Create the file if it doesn't exist, then read it
-    file = open(STUDENTS_FILE, "a+")
-    file.close()
+@app.route("/")
+def index():
+    load_students()
+    load_grades()
 
-    file = open(STUDENTS_FILE, "r")
-    reader = csv.DictReader(file)
+    total_students = len(students)
+    total_grades = len(grades)
 
-    for row in reader:
-        if row["student_id"] and row["name"]:
-            student_id = row["student_id"].strip()
-            name = row["name"].strip()
-            students[student_id] = name
+    class_average = 0
+    if total_students > 0:
+        total_avg = 0
+        count = 0
+        for student_id in students:
+            avg = calculate_average(student_id)
+            if avg != -1:
+                total_avg = total_avg + avg
+                count = count + 1
 
-    file.close()
+        if count > 0:
+            class_average = total_avg / count
 
-
-def load_grades():
-    global grades
-    grades = []
-
-    # Create the file if it doesn't exist, then read it
-    file = open(GRADES_FILE, "a+")
-    file.close()
-
-    file = open(GRADES_FILE, "r")
-    reader = csv.DictReader(file)
-
-    for row in reader:
-        if row["student_id"] and row["subject"] and row["mark"]:
-            grade_entry = {
-                "student_id": row["student_id"].strip(),
-                "subject": row["subject"].strip(),
-                "mark": float(row["mark"])
-            }
-            grades.append(grade_entry)
-
-    file.close()
+    return render_template("index.html", total_students=total_students, total_grades=total_grades, class_average=round(class_average, 2))
 
 
-def save_students():
-    file = open(STUDENTS_FILE, "w", newline="")
-    fieldnames = ["student_id", "name"]
-    writer = csv.DictWriter(file, fieldnames=fieldnames)
-
-    writer.writeheader()
-
-    for student_id in students:
-        writer.writerow({
-            "student_id": student_id,
-            "name": students[student_id]
-        })
-
-    file.close()
-
-
-def save_grades():
-    file = open(GRADES_FILE, "w", newline="")
-    fieldnames = ["student_id", "subject", "mark"]
-    writer = csv.DictWriter(file, fieldnames=fieldnames)
-
-    writer.writeheader()
-
-    for grade_entry in grades:
-        writer.writerow(grade_entry)
-
-    file.close()
-
-def calculate_average(student_id):
-    # Returns -1 if student has no grades
-    total = 0
-    count = 0
-
-    for grade_entry in grades:
-        if grade_entry["student_id"] == student_id:
-            total = total + grade_entry["mark"]
-            count = count + 1
-
-    if count == 0:
-        return -1
-
-    average = total / count
-    return average
-
-
-def is_valid_mark(mark_input):
-    # Checks the mark is a valid whole or decimal number
-    if mark_input == "":
-        return False
-
-    dot_count = 0
-
-    for character in mark_input:
-        if character == ".":
-            dot_count = dot_count + 1
-            if dot_count > 1:
-                return False
-        elif character.isdigit() == False:
-            return False
-
-    return True    
+if __name__ == "__main__":
+    load_students()
+    load_grades()
+    app.run(debug=True)
