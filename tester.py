@@ -263,6 +263,24 @@ def index():
 
     return render_template("index.html", total_students=total_students, total_grades=total_grades, class_average=round(class_average, 2))
 
+@app.route("/students")
+def view_students():
+    load_students()
+    load_grades()
+
+    student_list = []
+
+    for student_id in students:
+        name = students[student_id]
+        average = calculate_average(student_id)
+
+        student_list.append({
+            "student_id": student_id,
+            "name": name,
+            "average": average if average != -1 else None
+        })
+
+    return render_template("students.html", students=student_list)
 
 if __name__ == "__main__":
     load_students()
