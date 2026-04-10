@@ -337,6 +337,34 @@ def delete_student(student_id):
     name = students[student_id]
     return render_template("delete_student.html", student_id=student_id, name=name)
 
+@app.route("/student/<student_id>/grades")
+def view_student_grades(student_id):
+    load_students()
+    load_grades()
+
+    if student_id not in students:
+        return redirect(url_for("view_students"))
+
+    name = students[student_id]
+
+    student_grades = []
+    highest = -1
+    lowest = 101
+
+    for grade_entry in grades:
+        if grade_entry["student_id"] == student_id:
+            student_grades.append(grade_entry)
+
+            if grade_entry["mark"] > highest:
+                highest = grade_entry["mark"]
+
+            if grade_entry["mark"] < lowest:
+                lowest = grade_entry["mark"]
+
+    average = calculate_average(student_id)
+
+    return render_template("view_grades.html", student_id=student_id, name=name, grades=student_grades, average=average, highest=highest, lowest=lowest)
+
 if __name__ == "__main__":
     load_students()
     load_grades()
