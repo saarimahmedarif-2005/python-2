@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Student Progress Tracker{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <nav>
+        <div class="nav-brand">📚 Student Progress Tracker</div>
+        <a href="{{ url_for('index') }}">Home</a>
+        <a href="{{ url_for('view_students') }}">Students</a>
+        <a href="{{ url_for('add_student') }}">Add Student</a>
+        <a href="{{ url_for('add_grade') }}">Add Grade</a>
+        <a href="{{ url_for('search_student') }}">Search</a>
+        <a href="{{ url_for('generate_report') }}">Report</a>
+    </nav>
+
+    <div class="container">
+        {% block content %}{% endblock %}
+    </div>
+</body>
+</html>

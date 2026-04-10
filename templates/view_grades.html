@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block title %}View Grades - Student Progress Tracker{% endblock %}
+
+{% block content %}
+<a href="{{ url_for('view_students') }}" class="back-link">← Back to Students</a>
+
+<h1 class="page-title">Grades for {{ name }}</h1>
+
+<div class="card">
+    {% if not grades %}
+        <p>No grades found for this student.</p>
+    {% else %}
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Subject</th>
+                    <th>Mark</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for grade in grades %}
+                <tr>
+                    <td>{{ grade.subject }}</td>
+                    <td>{{ grade.mark }}</td>
+                    <td>
+                        <a href="{{ url_for('update_grade', student_id=student_id, subject=grade.subject) }}" class="button btn-primary">Edit</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <div style="margin-top: 2rem; padding: 1rem; background-color: #ecf0f1; border-radius: 4px;">
+            <p><strong>Average:</strong> {% if average == -1 %}No grades yet{% else %}{{ "%.2f"|format(average) }}%{% endif %}</p>
+            <p><strong>Highest:</strong> {% if highest == -1 %}N/A{% else %}{{ highest }}{% endif %}</p>
+            <p><strong>Lowest:</strong> {% if lowest == 101 %}N/A{% else %}{{ lowest }}{% endif %}</p>
+        </div>
+    {% endif %}
+
+    <div style="margin-top: 2rem;">
+        <a href="{{ url_for('add_grade') }}" class="button btn-success">Add Grade</a>
+    </div>
+</div>
+{% endblock %}

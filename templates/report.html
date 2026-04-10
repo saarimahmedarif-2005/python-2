@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+
+{% block title %}Class Report - Student Progress Tracker{% endblock %}
+
+{% block content %}
+<h1 class="page-title">Class Report</h1>
+
+{% if not students_list %}
+    <div class="card">
+        <p>No students found. <a href="{{ url_for('add_student') }}">Add a student</a> to generate a report.</p>
+    </div>
+{% else %}
+    <div class="stats">
+        {% if class_average is not none %}
+        <div class="stat-card">
+            <h3>Class Average</h3>
+            <div class="number">{{ class_average }}%</div>
+        </div>
+        {% endif %}
+        
+        {% if top_average %}
+        <div class="stat-card">
+            <h3>Top Student</h3>
+            <div style="font-size: 1.2rem;">{{ top_student }}</div>
+            <div style="font-size: 1.5rem; margin-top: 0.5rem;">{{ top_average }}%</div>
+        </div>
+        {% endif %}
+        
+        {% if failing_students %}
+        <div class="stat-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+            <h3>Failing Students</h3>
+            <div class="number">{{ failing_students|length }}</div>
+        </div>
+        {% endif %}
+    </div>
+
+    {% if student_chart %}
+    <div class="chart-container">
+        <h2>Student Average Grades</h2>
+        <img src="data:image/png;base64,{{ student_chart }}" alt="Student Averages">
+    </div>
+    {% endif %}
+
+    {% if subject_chart %}
+    <div class="chart-container">
+        <h2>Subject Average Grades</h2>
+        <img src="data:image/png;base64,{{ subject_chart }}" alt="Subject Averages">
+    </div>
+    {% endif %}
+
+    {% if pass_fail_chart %}
+    <div class="chart-container">
+        <h2>Pass vs Fail Distribution</h2>
+        <img src="data:image/png;base64,{{ pass_fail_chart }}" alt="Pass vs Fail">
+    </div>
+    {% endif %}
+
+    <div class="card">
+        <h2>All Students</h2>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Student ID</th>
+                    <th>Name</th>
+                    <th>Average Grade</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for student in students_list %}
+                <tr>
+                    <td>{{ student.student_id }}</td>
+                    <td>{{ student.name }}</td>
+                    <td>
+                        {% if student.average == -1 or student.average is none %}
+                            No grades yet
+                        {% else %}
+                            {{ "%.2f"|format(student.average) }}%
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% if failing_students %}
+    <div class="card">
+        <h2>Failing Students (Below 50%)</h2>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Student ID</th>
+                    <th>Name</th>
+                    <th>Average Grade</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for student in failing_students %}
+                <tr style="background-color: #f8d7da;">
+                    <td>{{ student.student_id }}</td>
+                    <td>{{ student.name }}</td>
+                    <td>{{ "%.2f"|format(student.average) }}%</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+{% endif %}
+
+{% endblock %}

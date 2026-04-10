@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}Search Student - Student Progress Tracker{% endblock %}
+
+{% block content %}
+<h1 class="page-title">Search Student</h1>
+
+<div class="card">
+    <form method="POST" style="margin-bottom: 2rem;">
+        <div class="form-group">
+            <label for="search_name">Search by Name:</label>
+            <input type="text" id="search_name" name="search_name" placeholder="e.g., Ali" required>
+        </div>
+        <button type="submit" class="button btn-primary">Search</button>
+    </form>
+
+    {% if results %}
+        <h2>Search Results</h2>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Student ID</th>
+                    <th>Name</th>
+                    <th>Average Grade</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for student in results %}
+                <tr>
+                    <td>{{ student.student_id }}</td>
+                    <td>{{ student.name }}</td>
+                    <td>
+                        {% if student.average == -1 or student.average is none %}
+                            No grades yet
+                        {% else %}
+                            {{ "%.2f"|format(student.average) }}%
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div class="action-buttons">
+                            <a href="{{ url_for('view_student_grades', student_id=student.student_id) }}" class="button btn-primary">View Grades</a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% elif request.method == 'POST' %}
+        <p>No students found with that name.</p>
+    {% endif %}
+</div>
+{% endblock %}

@@ -63,3 +63,6 @@ coverage/
 # Misc
 *.bak
 *.cache
+
+# csvfiles
+*.csv

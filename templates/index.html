@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block title %}Home - Student Progress Tracker{% endblock %}
+
+{% block content %}
+<h1 class="page-title">Welcome to Student Progress Tracker</h1>
+
+<div class="stats">
+    <div class="stat-card">
+        <h3>Total Students</h3>
+        <div class="number">{{ total_students }}</div>
+    </div>
+    <div class="stat-card">
+        <h3>Total Grades</h3>
+        <div class="number">{{ total_grades }}</div>
+    </div>
+    <div class="stat-card">
+        <h3>Class Average</h3>
+        <div class="number">{{ class_average }}%</div>
+    </div>
+</div>
+
+<div class="card">
+    <h2>Quick Actions</h2>
+    <p style="margin-bottom: 1rem;">Get started by managing your students and grades:</p>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+        <a href="{{ url_for('add_student') }}" class="button btn-primary">➕ Add New Student</a>
+        <a href="{{ url_for('view_students') }}" class="button btn-primary">👥 View All Students</a>
+        <a href="{{ url_for('add_grade') }}" class="button btn-success">📝 Add Grade</a>
+        <a href="{{ url_for('generate_report') }}" class="button btn-primary">📊 View Report</a>
+    </div>
+</div>
+{% endblock %}

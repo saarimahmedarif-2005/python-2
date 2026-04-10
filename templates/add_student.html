@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block title %}Add Student - Student Progress Tracker{% endblock %}
+
+{% block content %}
+<a href="{{ url_for('view_students') }}" class="back-link">← Back to Students</a>
+
+<h1 class="page-title">Add New Student</h1>
+
+<div class="card">
+    {% if error %}
+        <div class="error">{{ error }}</div>
+    {% endif %}
+
+    <form method="POST">
+        <div class="form-group">
+            <label for="student_id">Student ID:</label>
+            <input type="text" id="student_id" name="student_id" required placeholder="e.g., S001">
+        </div>
+
+        <div class="form-group">
+            <label for="name">Student Name:</label>
+            <input type="text" id="name" name="name" required placeholder="e.g., Ali Ahmed">
+        </div>
+
+        <div style="display: flex; gap: 1rem;">
+            <button type="submit" class="button btn-success">Add Student</button>
+            <a href="{{ url_for('view_students') }}" class="button btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}
