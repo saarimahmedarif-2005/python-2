@@ -411,6 +411,49 @@ def add_grade():
 
     return render_template("add_grade.html", students=students)
 
+@app.route("/update-grade/<student_id>/<subject>", methods=["GET", "POST"])
+def update_grade(student_id, subject):
+    load_students()
+    load_grades()
+
+    if request.method == "POST":
+        mark_input = request.form.get("mark").strip()
+
+        error = None
+
+        if not is_valid_mark(mark_input):
+            error = "Mark must be a valid number."
+        else:
+            mark = float(mark_input)
+            if mark < 0 or mark > 100:
+                error = "Mark must be between 0 and 100."
+
+        if error:
+            return render_template("update_grade.html", student_id=student_id, subject=subject, error=error)
+
+        mark = float(mark_input)
+
+        # Find the matching grade and update it
+        for grade_entry in grades:
+            if grade_entry["student_id"] == student_id:
+                if grade_entry["subject"].lower() == subject.lower():
+                    grade_entry["mark"] = mark
+                    break
+
+        save_grades()
+
+        return redirect(url_for("view_student_grades", student_id=student_id))
+
+    # Get the current mark to pre-fill the form
+    current_mark = None
+    for grade_entry in grades:
+        if grade_entry["student_id"] == student_id:
+            if grade_entry["subject"].lower() == subject.lower():
+                current_mark = grade_entry["mark"]
+                break
+
+    return render_template("update_grade.html", student_id=student_id, subject=subject, current_mark=current_mark)
+
 if __name__ == "__main__":
     load_students()
     load_grades()
