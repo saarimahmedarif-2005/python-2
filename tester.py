@@ -365,6 +365,52 @@ def view_student_grades(student_id):
 
     return render_template("view_grades.html", student_id=student_id, name=name, grades=student_grades, average=average, highest=highest, lowest=lowest)
 
+@app.route("/add-grade", methods=["GET", "POST"])
+def add_grade():
+    load_students()
+    load_grades()
+
+    if request.method == "POST":
+        student_id = request.form.get("student_id").strip()
+        subject = request.form.get("subject").strip()
+        mark_input = request.form.get("mark").strip()
+
+        error = None
+
+        if student_id not in students:
+            error = "Student not found."
+        elif subject == "":
+            error = "Subject cannot be empty."
+        elif not is_valid_mark(mark_input):
+            error = "Mark must be a valid number."
+        else:
+            mark = float(mark_input)
+            if mark < 0 or mark > 100:
+                error = "Mark must be between 0 and 100."
+            else:
+                # Check if a grade for this subject already exists
+                for grade_entry in grades:
+                    if grade_entry["student_id"] == student_id:
+                        if grade_entry["subject"].lower() == subject.lower():
+                            error = "A grade for this subject already exists."
+                            break
+
+        if error:
+            return render_template("add_grade.html", students=students, error=error)
+
+        mark = float(mark_input)
+        grade_entry = {
+            "student_id": student_id,
+            "subject": subject,
+            "mark": mark
+        }
+        grades.append(grade_entry)
+        save_grades()
+
+        return redirect(url_for("view_student_grades", student_id=student_id))
+
+    return render_template("add_grade.html", students=students)
+
 if __name__ == "__main__":
     load_students()
     load_grades()
